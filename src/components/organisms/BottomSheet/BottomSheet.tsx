@@ -88,7 +88,7 @@ export const BottomSheet: React.FC<BottomSheetType> = props => {
                 titleStyle={BottomSheetStyle.cancelButtonText}
               ></Button>
             )}
-            {/* Filtrele: validasyon + üst bileşene bildir + modalı kapat */}
+            {/* Filtrele butonu validasyon +  modalı kapatır */}
             <Button
               style={BottomSheetStyle.filterButton}
               title="Filtrele"

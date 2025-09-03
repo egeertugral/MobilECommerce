@@ -4,6 +4,7 @@ import axios, {
   AxiosResponse,
   Method,
 } from 'axios';
+import useLoaderStore from '../store/loaderStore';
 
 const BASE_URL = 'https://api.escuelajs.co/api/v1';
 
@@ -32,6 +33,32 @@ const generateURL = (option: Option) => {
 
 const callAPI = (option: Option): Promise<AxiosResponse> => {
   const instance = axios.create();
+
+  const { setLoading } = useLoaderStore.getState(); //.getState() ile store'a erişiyorum.
+
+  // -----Request intercepter-----
+  instance.interceptors.request.use(
+    config => {
+      setLoading(true);
+      return config;
+    },
+    error => {
+      setLoading(false);
+      return Promise.reject(error);
+    },
+  );
+
+  // -----Response intercepter-----
+  instance.interceptors.response.use(
+    response => {
+      setLoading(false);
+      return response;
+    },
+    error => {
+      setLoading(false);
+      return Promise.reject(error);
+    },
+  );
 
   const config: AxiosRequestConfig = {
     url: generateURL(option),
