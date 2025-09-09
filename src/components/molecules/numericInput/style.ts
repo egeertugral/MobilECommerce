@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
@@ -8,10 +8,10 @@ export const styles = StyleSheet.create({
     gap: 12,
   },
   value: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
-    minWidth: 24,
+    minWidth: 24, // dar alanda kaybolmasın
     textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111', // beyaz zeminde görünür
   },
 });

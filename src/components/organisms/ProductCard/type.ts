@@ -1,6 +1,6 @@
-export interface ProductCardProps {
-  title: string;
-  price: string;
-  image: any;
+import { Product } from '../../../apı/models/Products';
+
+export interface Props {
+  product: Product;
   onPress?: () => void;
 }

@@ -12,6 +12,11 @@ import {
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RootStackParamList } from '../../navigation/type';
+import { useFavoritesStore } from '../../store/favorites';
+import { useQtyStore } from '../../store/qtyStore';
+import { NumericInput } from '../molecules/numericInput/NumericInput';
+import { useBasketStore } from '../../store/basketStore';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // Bu sayfa `RootStackParamList` içindeki "ProductDetailPage" param tipini kullanıyor.
 type ProductDetailRouteProp = RouteProp<
@@ -20,18 +25,24 @@ type ProductDetailRouteProp = RouteProp<
 >;
 
 const ProductDetailPage = () => {
-  const navigation = useNavigation();
+  const addToBasket = useBasketStore(s => s.add); // Sepete ekleme fonksiyonu
+
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<ProductDetailRouteProp>();
 
   const product = route.params?.product;
-  // qty (miktar) default 1  ve isFavorite (favori) için local state tutar.
-  const [qty, setQty] = useState<number>(1);
-  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const toggle = useFavoritesStore(s => s.toggle);
+  const isFav = useFavoritesStore(s => s.isFavorite(product.id));
+  // Adet bilgisini global store’dan alıyorrrrr.
+  const qty = useQtyStore(s => s.getQty(product.id));
+  const setQty = useQtyStore(s => s.setQty);
   //Toplam fiyatı performans için useMemo hooku ile hesaplıyor.
   const total = useMemo(() => product.price * qty, [product.price, qty]);
-  // Öylseine uyarı gösteriyo şuan sepet ekranı yapınca zustand ile değişecek.
+
   const handleAddToCart = () => {
-    Alert.alert('Sepet', 'Ürün sepete eklendi.');
+    addToBasket(product, qty); // ürünü/adedini sepete yazzzz
+    navigation.navigate('BasketPage'); // Sepet sayfasına gider
   };
 
   return (
@@ -48,16 +59,16 @@ const ProductDetailPage = () => {
 
         <TouchableOpacity
           accessibilityRole="button"
-          onPress={() => setIsFavorite(v => !v)}
+          onPress={() => toggle(product)}
           style={styles.circleBtn}
         >
           <Text
             style={[
               styles.circleBtnIcon,
-              { color: isFavorite ? '#e11d48' : '#111' },
+              { color: isFav ? '#e11d48' : '#9ca3af' }, // 🔁 her render store’a bakar
             ]}
           >
-            ❤
+            {isFav ? '\u2665' : '\u2661'} {/* ♥ / ♡ */}
           </Text>
         </TouchableOpacity>
       </View>
@@ -73,6 +84,14 @@ const ProductDetailPage = () => {
         <Text style={styles.desc} numberOfLines={3}>
           {product.description}
         </Text>
+        {/* ✅ Footer’dan biraz yukarıda adet seçici */}
+        <View style={styles.qtyBar}>
+          <NumericInput
+            value={qty}
+            onChange={v => setQty(product.id, v)}
+            min={1}
+          />
+        </View>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -126,7 +145,11 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginBottom: 16,
   },
-
+  qtyBar: {
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 24,
+  },
   topBar: {
     position: 'absolute',
     top: 10,

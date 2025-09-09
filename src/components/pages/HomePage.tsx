@@ -20,6 +20,8 @@ import type { Product } from '../../apı/models/Products';
 import { useNavigation } from '@react-navigation/native';
 import type { RootStackParamList } from '../../navigation/type';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useBasketStore } from '../../store/basketStore';
+import { Badge } from '../molecules/badge/badge';
 
 const HomePage = () => {
   const navigation =
@@ -30,6 +32,10 @@ const HomePage = () => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // sepetteki toplam ürün adedi
+  const cartCount = useBasketStore(s =>
+    s.items.reduce((sum, ci) => sum + ci.qty, 0),
+  );
   // products: API’den gelen tüm ürünler
   // getProducts: ürünleri çeken fonksiyon
   const { products, getProducts } = useProductService();
@@ -70,18 +76,29 @@ const HomePage = () => {
       <View style={styles.divider} />
 
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('FavoritesPage')}>
           <Text style={styles.icon}>❤️</Text>
         </TouchableOpacity>
 
         <Text style={styles.title}>Passo E-Commerce</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('BasketPage')}>
           <View style={styles.cartWrapper}>
             <Text style={styles.icon}>🛒</Text>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>1</Text>
-            </View>
           </View>
+          {/* Badge sadece sepet doluysa çıkar */}
+          <Badge
+            cartItemCount={cartCount}
+            style={{
+              position: 'absolute',
+              right: -10,
+              top: -6,
+              backgroundColor: 'red',
+              borderRadius: 10,
+              paddingHorizontal: 5,
+              paddingVertical: 2,
+            }}
+            textStyle={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}
+          />
         </TouchableOpacity>
       </View>
 
@@ -103,9 +120,7 @@ const HomePage = () => {
         renderItem={({ item }) => (
           <View style={{ flex: 1, margin: 6 }}>
             <ProductCard
-              title={item.title}
-              price={item.price.toString()}
-              image={item.images[0]}
+              product={item}
               onPress={() => {
                 //Kart tıklanınca detay sayfasına navigation ile geçiş oluyor.
                 navigation.navigate('ProductDetailPage', { product: item });
@@ -143,6 +158,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: 4,
   },
   icon: {
     fontSize: 20,
