@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { BottomSheet } from '../organisms/BottomSheet/BottomSheet';
 import { SearchBar } from '../molecules/searchBar/searchBar';
-import { LinkButton } from '../molecules/linkButton/linkButton';
 import useProductService from '../../apı/ProductService';
 import ProductCard from '../organisms/ProductCard/ProductCard';
 import type { Product } from '../../apı/models/Products';
@@ -22,12 +21,16 @@ import type { RootStackParamList } from '../../navigation/type';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useBasketStore } from '../../store/basketStore';
 import { Badge } from '../molecules/badge/badge';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 
 const HomePage = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [visible, setVisible] = useState(false);
+  // 🔎 arama state'i
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searchText, setSearchText] = React.useState('');
   // filteredProducts: Arama/filtre sonucu gösterilecek ürün listesi
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -70,6 +73,24 @@ const HomePage = () => {
     setFilteredProducts(filtered);
   };
 
+  const handleSearch = (term: string) => {
+    setIsSearching(true);
+    const filtered =
+      products?.filter(p =>
+        `${p.title} ${p.description}`
+          .toLowerCase()
+          .includes(term.toLowerCase()),
+      ) ?? [];
+    setFilteredProducts(filtered);
+  };
+
+  const handleClearSearch = () => {
+    setSearchText(''); // <-- inputu gerçekten boşaltır
+    setIsSearching(false);
+    setFilteredProducts(products ?? []);
+  };
+  const listData =
+    searchText.trim().length >= 2 ? filteredProducts : products ?? [];
   //Header, SearchBar ve ürün grid’i (FlatList)
   return (
     <View style={styles.container}>
@@ -105,16 +126,35 @@ const HomePage = () => {
       <View style={styles.divider} />
 
       <SearchBar
+        value={searchText} // <-- controlled value
+        onChangeText={setSearchText} // <-- controlled setter
         onPress={() => setVisible(true)}
         isFilterActive={filteredProducts.length !== products?.length}
+        onSearch={handleSearch}
+        onClear={handleClearSearch}
+        debounce={500}
       />
-
+      {isSearching && (
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginTop: 12,
+            marginBottom: 8,
+          }}
+        >
+          <Text style={{ fontWeight: '700', color: '#111' }}>
+            Bulunan Sonuçlar
+          </Text>
+          <TouchableOpacity onPress={handleClearSearch}>
+            <Text style={{ color: '#2563eb', fontWeight: '600' }}>
+              Aramayı Temizle
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
       <FlatList
-        data={
-          filteredProducts.length > 0 || isSearching
-            ? filteredProducts
-            : products
-        }
+        data={listData}
         keyExtractor={item => item.id.toString()}
         numColumns={2}
         renderItem={({ item }) => (

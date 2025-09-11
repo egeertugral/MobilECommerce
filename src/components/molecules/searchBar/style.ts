@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   searchWrapper: {
@@ -11,6 +11,16 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
+  },
+  filterBtn: {
+    position: 'absolute',
+    right: 10,
+    top: '50%',
+    transform: [{ translateY: -16 }], // 32px ikon alanı varsayımı
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterBadge: {
     position: 'absolute',
@@ -32,7 +42,7 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     right: 10,
     top: '50%',
-    transform: [{translateY: -12}],
+    transform: [{ translateY: -12 }],
   },
   filterIcon: {
     fontSize: 18,

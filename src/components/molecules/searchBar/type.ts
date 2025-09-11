@@ -6,4 +6,10 @@ export type searchBarType = {
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
   isFilterActive?: boolean;
+  onSearch?: (term: string) => void;
+  onClear?: () => void;
+  debounce?: number;
+  defaultValue?: string;
+  value: string;
+  onChangeText: (t: string) => void;
 };
